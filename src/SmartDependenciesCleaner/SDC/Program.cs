@@ -1,15 +1,32 @@
-﻿using System.IO;
+﻿using CommandLine;
+using System;
+using System.IO;
 using System.Linq;
 
 namespace SDC
 {
+    class Options
+    {
+        [Option('p', "path", Required = true, HelpText = "Pasta principal")]
+        public string Path { get; set; }
+
+        [Option('s', "search", Required = true, HelpText = "Padrão para busca, você pode concatenar cada padrão de busca")]
+        public string SearchPattern { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            string pattern = "*packages*|*node_modules*|*bin*|*obj*|package-lock.json";
-            string[] files = GetFiles(@"C:\temp\InvalidPathToDontDoWrong", pattern, SearchOption.AllDirectories);
-            string[] directories = GetDirectories(@"C:\temp\InvalidPathToDontDoWrong", pattern, SearchOption.AllDirectories);
+            CommandLine.Parser.Default.ParseArguments<Options>(args)
+                .WithParsed<Options>(opts => Run(opts))
+                .WithNotParsed<Options>((errs) => HandleParseError(errs));
+        }
+
+        private static void Run(Options opts)
+        {
+            string[] files = GetFiles(opts.Path, opts.SearchPattern, SearchOption.AllDirectories);
+            string[] directories = GetDirectories(opts.Path, opts.SearchPattern, SearchOption.AllDirectories);
 
             foreach (var path in files.Concat(directories))
             {
@@ -25,6 +42,11 @@ namespace SDC
                     fileInfo.Delete();
                 }
             }
+        }
+
+        private static void HandleParseError(object errs)
+        {
+            Console.WriteLine("Comando não bem formado, tente novamente...");
         }
 
         /// <summary>
