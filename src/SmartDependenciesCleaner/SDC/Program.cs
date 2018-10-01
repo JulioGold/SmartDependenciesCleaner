@@ -7,6 +7,9 @@ namespace SDC
 {
     class Options
     {
+        [Option('l', "list", HelpText = "Listar apenas! NÃO realiza o delete!")]
+        public bool List { get; set; }
+
         [Option('p', "path", Required = true, HelpText = "Pasta principal")]
         public string Path { get; set; }
 
@@ -32,14 +35,23 @@ namespace SDC
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
+                Console.WriteLine(path);
+
                 if (directoryInfo.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    directoryInfo.Delete(true);
+                    if (!opts.List)
+                    {
+                        directoryInfo.Delete(true);
+                    }
                 }
                 else
                 {
                     FileInfo fileInfo = new FileInfo(path);
-                    fileInfo.Delete();
+
+                    if(!opts.List)
+                    {
+                        fileInfo.Delete();
+                    }
                 }
             }
         }
